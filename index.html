@@ -4,100 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hesap Silme Talebi</title>
-    <!-- Firebase SDK (Sürüm 9+) -->
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getDatabase, ref, get, remove } from "https://gstatic.com";
-
-        // Firebase Anahtarlarınız
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1bzy3VaZJwUwlhybNt6yrVzurQsrcqLw",
-            authDomain: "://firebaseapp.com",
-            databaseURL: "https://firebaseio.com",
-            projectId: "mailmaster-62785",
-            storageBucket: "mailmaster-62785.firebasestorage.app",
-            messagingSenderId: "324963953782",
-            appId: "1:324963953782:web:a2baa1cf64db51798bc357",
-            measurementId: "G-2DZQ0XPJCW"
-        };
-
-        // Firebase ve Realtime Database Başlat
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Form Gönderme İşlemi
-        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const nickname = document.getElementById('nickname').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmCheck = document.getElementById('confirmCheck').checked;
-
-            if (!confirmCheck) {
-                showMessage("Lütfen yukarıdaki bilgilendirmeyi onaylayın.", "error");
-                return;
-            }
-
-            try {
-                showMessage("Kullanıcı veritabanında aranıyor...", "info");
-                
-                // 1. Veritabanında 'users/takma_ad' yoluna bağlanmayı dene
-                const userRef = ref(database, 'users/' + nickname);
-                
-                let snapshot;
-                try {
-                    snapshot = await get(userRef);
-                } catch (dbError) {
-                    throw new Error("Firebase Rules (Kurallar) bu veriyi okumanıza izin vermedi. Hata Kodu: " + dbError.message);
-                }
-
-                // 2. Kullanıcı var mı kontrolü
-                if (!snapshot.exists()) {
-                    throw new Error(`'${nickname}' adında bir kullanıcı veritabanında bulunamadı. Lütfen takma adı kontrol edin.`);
-                }
-
-                const userData = snapshot.val();
-                
-                // 3. Veritabanındaki şifre alanını bulma yarışı
-                const dbPassword = userData.password || userData.sifre || userData.passwordText || userData.pass;
-
-                if (dbPassword === undefined || dbPassword === null) {
-                    const mevcutAlanlar = Object.keys(userData).join(', ');
-                    throw new Error(`Kullanıcı bulundu fakat şifre alanı doğrulanamadı. Veritabanınızdaki alanlar şunlar: [${mevcutAlanlar}]. Kod içindeki kelimeyi bunlardan birine göre düzeltmelisiniz.`);
-                }
-
-                // 4. Şifre Eşleşme Kontrolü
-                if (dbPassword.toString() === password.toString()) {
-                    showMessage("Şifre doğru. Hesap siliniyor...", "info");
-                    
-                    try {
-                        // 5. Veriyi kalıcı olarak sil
-                        await remove(userRef);
-                        
-                        // 🟢 İSTEDİĞİNİZ BAŞARI MESAJI BURAYA EKLENDİ
-                        showMessage("İşleminiz başarıyla gerçekleşti.", "success");
-                        document.getElementById('deleteForm').reset();
-                    } catch (deleteError) {
-                        throw new Error("Kullanıcı bulundu ve şifre doğru fakat veritabanından silme izniniz yok. Hata: " + deleteError.message);
-                    }
-
-                } else {
-                    throw new Error("Girdiğiniz şifre sistemdeki şifreyle eşleşmedi. Lütfen tekrar deneyin.");
-                }
-
-            } catch (error) {
-                console.error("Detaylı Hata:", error);
-                showMessage("Error: " + error.message, "error");
-            }
-        });
-
-        function showMessage(text, type) {
-            const messageBox = document.getElementById('message');
-            messageBox.innerText = text;
-            messageBox.className = "message " + type;
-            messageBox.style.display = "block";
-        }
-    </script>
+    
+    <!-- Evrensel Firebase Kütüphaneleri -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
@@ -112,11 +22,103 @@
         .checkbox-group input { margin-top: 3px; }
         button { width: 100%; background-color: #d9534f; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
         button:hover { background-color: #c9302c; }
-        .message { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: none; text-align: left; word-break: break-word; line-height: 1.4; }
+        
+        /* 🔔 SİTENİN YUKARISINDA ÇIKACAK BİLGİ MESAJ KUTULARI */
+        .message { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; display: none; text-align: left; word-break: break-word; line-height: 1.4; font-weight: 500; }
         .error { background-color: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
         .success { background-color: #d4edda; color: #155724; border-left: 5px solid #28a745; text-align: center; font-weight: bold; font-size: 16px; }
         .info { background-color: #e2e3e5; color: #383d41; border-left: 5px solid #6c757d; }
     </style>
+
+    <script>
+        // Sizin kurumsal Firebase anahtarlarınız
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1bzy3VaZJwUwlhybNt6yrVzurQsrcqLw",
+            authDomain: "://firebaseapp.com",
+            databaseURL: "https://firebaseio.com",
+            projectId: "mailmaster-62785",
+            storageBucket: "mailmaster-62785.firebasestorage.app",
+            messagingSenderId: "324963953782",
+            appId: "1:324963953782:web:a2baa1cf64db51798bc357",
+            measurementId: "G-2DZQ0XPJCW"
+        };
+
+        // Firebase'i güvenli şekilde başlat
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+        } catch (e) {
+            console.error("Firebase başlatılamadı:", e);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const database = firebase.database();
+
+            document.getElementById('deleteForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const nickname = document.getElementById('nickname').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmCheck = document.getElementById('confirmCheck').checked;
+
+                if (!confirmCheck) {
+                    showMessage("Lütfen yukarıdaki bilgilendirmeyi onaylayın.", "error");
+                    return;
+                }
+
+                // İlk yükleme mesajı formun üstünde belirir
+                showMessage("Kullanıcı veritabanında aranıyor...", "info");
+
+                // Veritabanında users/takma_ad yoluna git
+                const userRef = database.ref('users/' + nickname);
+
+                userRef.once('value').then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        showMessage("Error: '" + nickname + "' adında bir kullanıcı veritabanında bulunamadı.", "error");
+                        return;
+                    }
+
+                    const userData = snapshot.val();
+                    // Veritabanındaki şifre alanını eşleştir (password, sifre, pass)
+                    const dbPassword = userData.password || userData.sifre || userData.passwordText || userData.pass;
+
+                    if (dbPassword === undefined || dbPassword === null) {
+                        const mevcutAlanlar = Object.keys(userData).join(', ');
+                        showMessage("Error: Kullanıcı bulundu fakat şifre alanı doğrulanamadı. Veritabanındaki alanlar: [" + mevcutAlanlar + "]", "error");
+                        return;
+                    }
+
+                    // Şifre eşleşme kontrolü
+                    if (dbPassword.toString() === password.toString()) {
+                        showMessage("Şifre doğru. Hesap siliniyor...", "info");
+                        
+                        // Veriyi kalıcı olarak sil
+                        userRef.remove().then(() => {
+                            showMessage("İşleminiz başarıyla gerçekleşti.", "success");
+                            document.getElementById('deleteForm').reset();
+                        }).catch((deleteError) => {
+                            showMessage("Error: Veritabanından silme izniniz yok. Hata: " + deleteError.message, "error");
+                        });
+
+                    } else {
+                        showMessage("Error: Girdiğiniz şifre sistemdeki şifreyle eşleşmedi.", "error");
+                    }
+
+                }).catch((dbError) => {
+                    showMessage("Error: Firebase Kuralları (Rules) erişime izin vermedi. Hata: " + dbError.message, "error");
+                });
+            });
+        });
+
+        // Mesajları sitenin yukarısındaki kutuda gösteren fonksiyon
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerText = text;
+            messageBox.className = "message " + type;
+            messageBox.style.display = "block";
+        }
+    </script>
 </head>
 <body>
 
@@ -131,6 +133,7 @@
         </ul>
     </div>
 
+    <!-- 🔔 TÜM MESAJLAR BU KUTUNUN İÇİNDE FORMUN YUKARISINDA GÖRÜNECEK -->
     <div id="message" class="message"></div>
 
     <form id="deleteForm">
@@ -146,7 +149,7 @@
 
         <div class="checkbox-group">
             <input type="checkbox" id="confirmCheck" required>
-            <label for="confirmCheck">Hesabımın MailMaster verilerimin kalıcı olarak silinmesini onaylıyorum.</label>
+            <label for="confirmCheck">Hesabımın kalıcı olarak silinmesini onaylıyorum.</label>
         </div>
 
         <button type="submit">Hesabımı Kalıcı Olarak Sil</button>
