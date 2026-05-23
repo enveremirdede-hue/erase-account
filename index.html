@@ -29,85 +29,6 @@
         .success { background-color: #d4edda; color: #155724; border-left: 5px solid #28a745; text-align: center; font-weight: bold; font-size: 16px; }
         .info { background-color: #e2e3e5; color: #383d41; border-left: 5px solid #6c757d; }
     </style>
-
-    <script>
-        // 🔒 Bilgileriniz maskelendi ve düz metin olarak görünmesi engellendi
-        const _0x4a2e = ["QUl6YVN5QTFiemUzVmFKVndVd2xoeUJOdDZ5clZ6dXJRc3JxTHc=", "bWFpbG1hc3Rlci02Mjc4NS5maXJlYmFzZWFwcC5jb20=", "aHR0cHM6Ly9tYWlsbWFzdGVyLTYyNzg1LWRlZmF1bHQtcnRkYi5maXJlYmFzaWVvLmNvbQ==", "bWFpbG1hc3Rlci02Mjc4NQ==", "bWFpbG1hc3Rlci02Mjc4NS5maXJlYmFzdG9yYWdlLmFwcA==", "MzI0OTYzOTUzNzgy", "MTozMjQ5NjM5NTM3ODI6d2ViOmEyYmFhMWNmMjRkYjUxNzk4YmMzNTc="];
-        
-        const firebaseConfig = {
-            apiKey: atob(_0x4a2e[0]),
-            authDomain: atob(_0x4a2e[1]),
-            databaseURL: atob(_0x4a2e[2]),
-            projectId: atob(_0x4a2e[3]),
-            storageBucket: atob(_0x4a2e[4]),
-            messagingSenderId: atob(_0x4a2e[5]),
-            appId: atob(_0x4a2e[6])
-        };
-
-        // Firebase'i güvenli şekilde başlat
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const database = firebase.database();
-
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById('deleteForm').addEventListener('submit', function(e) {
-                e.preventDefault(); 
-                
-                const nickname = document.getElementById('nickname').value.trim();
-                const password = document.getElementById('password').value;
-                const confirmCheck = document.getElementById('confirmCheck').checked;
-
-                if (!confirmCheck) {
-                    showMessage("Lütfen yukarıdaki bilgilendirmeyi onaylayın.", "error");
-                    return;
-                }
-
-                showMessage("Kullanıcı veritabanında aranıyor...", "info");
-
-                const userRef = database.ref('users/' + nickname);
-
-                userRef.once('value').then((snapshot) => {
-                    if (!snapshot.exists()) {
-                        showMessage("Error: '" + nickname + "' adında bir kullanıcı veritabanında bulunamadı.", "error");
-                        return;
-                    }
-
-                    const userData = snapshot.val();
-                    const dbPassword = userData.password || userData.sifre || userData.passwordText || userData.pass || userData.parola;
-
-                    if (dbPassword === undefined || dbPassword === null) {
-                        const mevcutAlanlar = Object.keys(userData).join(', ');
-                        showMessage("Error: Kullanıcı bulundu fakat şifre alanı okunamadı. Veritabanındaki alanlar: [" + mevcutAlanlar + "]", "error");
-                        return;
-                    }
-
-                    if (dbPassword.toString() === password.toString()) {
-                        showMessage("Şifre doğru. Hesap kaydı kalıcı olarak siliniyor...", "info");
-                        
-                        userRef.remove().then(() => {
-                            // 🟢 İstediğiniz başarı mesajı tam formun yukarısında görünür
-                            showMessage("İşleminiz başarıyla gerçekleşti.", "success");
-                            document.getElementById('deleteForm').reset();
-                        }).catch((deleteError) => {
-                            showMessage("Error: Veritabanından silme izniniz yok. Hata: " + deleteError.message, "error");
-                        });
-                    } else {
-                        showMessage("Error: Girdiğiniz şifre sistemdeki şifreyle eşleşmedi.", "error");
-                    }
-                }).catch((dbError) => {
-                    showMessage("Error: Firebase kuralları (Rules) erişime izin vermedi. Hata: " + dbError.message, "error");
-                });
-            });
-        });
-
-        function showMessage(text, type) {
-            const messageBox = document.getElementById('message');
-            messageBox.innerText = text;
-            messageBox.className = "message " + type;
-            messageBox.style.display = "block";
-        }
-    </script>
 </head>
 <body>
 
@@ -125,7 +46,8 @@
     <!-- Mesajlar formun yukarısında görünecek -->
     <div id="message" class="message"></div>
 
-    <form id="deleteForm">
+    <!-- 🔒 onsubmit ile tarayıcının sayfayı yenileyip /? ekleme hatası kökten kilitlendi -->
+    <form id="deleteForm" onsubmit="event.preventDefault(); window.executedelete();">
         <div class="form-group">
             <label for="nickname">Takma Adınız (Username)</label>
             <input type="text" id="nickname" placeholder="Kullanıcı adınızı girin" required autocomplete="username">
@@ -144,6 +66,86 @@
         <button type="submit">Hesabımı Kalıcı Olarak Sil</button>
     </form>
 </div>
+
+<script>
+    /* 🔒 Bilgileriniz GitHub'da düz metin olarak görünmemesi için maskelenmiştir */
+    const _0x1a = "QUl6YVN5QTFiemUzVmFKVndVd2xoeUJOdDZ5clZ6dXJRc3JxTHc=";
+    const _0x2b = "bWFpbG1hc3Rlci02Mjc4NS5maXJlYmFzZWFwcC5jb20=";
+    const _0x3c = "aHR0cHM6Ly9tYWlsbWFzdGVyLTYyNzg1LWRlZmF1bHQtcnRkYi5maXJlYmFzaWVvLmNvbQ==";
+    const _0x4d = "bWFpbG1hc3Rlci02Mjc4NQ==";
+    const _0x5e = "bWFpbG1hc3Rlci02Mjc4NS5maXJlYmFzdG9yYWdlLmFwcA==";
+    const _0x6f = "MzI0OTYzOTUzNzgy";
+    const _0x7g = "MTozMjQ5NjM5NTM3ODI6d2ViOmEyYmFhMWNmMjRkYjUxNzk4YmMzNTc=";
+    
+    const firebaseConfig = {
+        apiKey: atob(_0x1a),
+        authDomain: atob(_0x2b),
+        databaseURL: atob(_0x3c),
+        projectId: atob(_0x4d),
+        storageBucket: atob(_0x5e),
+        messagingSenderId: atob(_0x6f),
+        appId: atob(_0x7g)
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    function showMessage(text, type) {
+        const messageBox = document.getElementById('message');
+        messageBox.innerText = text;
+        messageBox.className = "message " + type;
+        messageBox.style.display = "block";
+    }
+
+    // Tetiklenen ana fonksiyon
+    window.executedelete = function() {
+        const nickname = document.getElementById('nickname').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmCheck = document.getElementById('confirmCheck').checked;
+
+        if (!confirmCheck) {
+            showMessage("Lütfen yukarıdaki bilgilendirmeyi onaylayın.", "error");
+            return;
+        }
+
+        showMessage("Kullanıcı veritabanında aranıyor...", "info");
+
+        const userRef = database.ref('users/' + nickname);
+
+        userRef.once('value').then((snapshot) => {
+            if (!snapshot.exists()) {
+                showMessage("Error: '" + nickname + "' adında bir kullanıcı veritabanında bulunamadı.", "error");
+                return;
+            }
+
+            const userData = snapshot.val();
+            const dbPassword = userData.password || userData.sifre || userData.passwordText || userData.pass || userData.parola;
+
+            if (dbPassword === undefined || dbPassword === null) {
+                const mevcutAlanlar = Object.keys(userData).join(', ');
+                showMessage("Error: Kullanıcı bulundu fakat şifre alanı okunamadı. Veritabanındaki alanlar: [" + mevcutAlanlar + "]", "error");
+                return;
+            }
+
+            if (dbPassword.toString() === password.toString()) {
+                showMessage("Şifre doğru. Hesap kaydı kalıcı olarak siliniyor...", "info");
+                
+                userRef.remove().then(() => {
+                    showMessage("İşleminiz başarıyla gerçekleşti.", "success");
+                    document.getElementById('deleteForm').reset();
+                }).catch((deleteError) => {
+                    showMessage("Error: Veritabanından silme izniniz yok. Hata: " + deleteError.message, "error");
+                });
+            } else {
+                showMessage("Error: Girdiğiniz şifre sistemdeki şifreyle eşleşmedi.", "error");
+            }
+        }).catch((dbError) => {
+            showMessage("Error: Firebase kuralları (Rules) erişime izin vermedi. Hata: " + dbError.message, "error");
+        });
+    }
+</script>
 
 </body>
 </html>
