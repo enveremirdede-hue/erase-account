@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesap Silme Talebi</title>
+    <!-- Firebase SDK (Sürüm 9+) -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, signInWithEmailAndPassword, deleteUser } from "https://gstatic.com";
+        import { getDatabase, ref, remove } from "https://gstatic.com";
+
+        // ✅ Sizin paylaştığınız güncel kurumsal Firebase anahtarlarınız yerleştirildi
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1bzy3VaZJwUwlhybNt6yrVzurQsrcqLw",
+            authDomain: "mailmaster-62785.firebaseapp.com",
+            databaseURL: "https://mailmaster-62785-default-rtdb.firebaseio.com",
+            projectId: "mailmaster-62785",
+            storageBucket: "mailmaster-62785.firebasestorage.app",
+            messagingSenderId: "324963953782",
+            appId: "1:324963953782:web:a2baa1cf64db51798bc357",
+            measurementId: "G-2DZQ0XPJCW"
+        };
+
+        // Firebase ve Servisleri Başlat
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Form Gönderme İşlemi
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
+            const confirmCheck = document.getElementById('confirmCheck').checked;
+
+            if (!confirmCheck) {
+                showMessage("Lütfen yukarıdaki bilgilendirmeyi onaylayın.", "error");
+                return;
+            }
+
+            // Firebase Auth için takma adı e-postaya dönüştürme mantığı
+            // Eğer takma ad zaten @ içeriyorsa doğrudan kullanır, içermiyorsa kurumsal uzantınızı ekler
+            const email = nickname.includes("@") ? nickname : `${nickname}@mailmaster.com`;
+
+            try {
+                showMessage("Kimlik doğrulanıyor...", "info");
+                // 1. Kullanıcıyı doğrula (Giriş yaptır)
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const userId = user.uid; // Kullanıcının Firebase ID'si
+
+                showMessage("Realtime Database kayıtları temizleniyor...", "info");
+                
+                // 2. Realtime Database'deki kullanıcı verilerini siler
+                // 💡 NOT: Veritabanında kullanıcılar hangi klasördeyse aşağıdaki 'users/' kısmını ona göre değiştirebilirsiniz (Örn: 'kullanicilar/')
+                const userRef = ref(database, 'users/' + userId);
+                await remove(userRef);
+
+                showMessage("Hesap kayıtları tamamen siliniyor...", "info");
+                // 3. Kullanıcıyı Firebase Auth (Giriş) sisteminden tamamen siler
+                await deleteUser(user);
+
+                showMessage("Hesabınız ve tüm kurumsal verileriniz başarıyla kalıcı olarak silindi.", "success");
+                document.getElementById('deleteForm').reset();
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    showMessage("Takma ad/E-posta veya şifre hatalı. Lütfen tekrar deneyin.", "error");
+                } else {
+                    showMessage("Bir hata oluştu: " + error.message, "error");
+                }
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerText = text;
+            messageBox.className = "message " + type;
+            messageBox.style.display = "block";
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #d9534f; margin-top: 0; text-align: center; }
+        .warning-box { background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-size: 14px; color: #856404; }
+        .warning-box ul { margin: 5px 0 0 20px; padding: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; font-size: 14px; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; font-size: 13px; color: #555; }
+        .checkbox-group input { margin-top: 3px; }
+        button { width: 100%; background-color: #d9534f; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #c9302c; }
+        .message { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: none; text-align: center; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .success { background-color: #d4edda; color: #155724; }
+        .info { background-color: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Hesabımı Kalıcı Olarak Sil</h2>
+    
+    <div class="warning-box">
+        <strong>⚠️ ÖNEMLİ KURUMSAL UYARI:</strong>
+        <ul>
+            <li>Bu işlem geri alınamaz.</li>
+            <li>Takma adınız ve şifreniz sistemimizden tamamen kaldırılacaktır.</li>
+            <li>MailMaster üzerindeki tüm geçmiş verileriniz, mesajlarınız ve ayarlarınız bir daha geri getirilmemek üzere silinecektir.</li>
+        </ul>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <form id="deleteForm">
+        <div class="form-group">
+            <label for="nickname">Takma Adınız veya E-postanız</label>
+            <input type="text" id="nickname" placeholder="Kullanıcı adınızı girin" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Şifreniz</label>
+            <input type="password" id="password" placeholder="Şifrenizi girin" required autocomplete="current-password">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="confirmCheck" required>
+            <label for="confirmCheck">Hesabımın ve Realtime Database üzerindeki tüm MailMaster verilerimin kalıcı olarak silinmesini onaylıyorum.</label>
+        </div>
+
+        <button type="submit">Hesabımı Kalıcı Olarak Sil</button>
+    </form>
+</div>
+
+</body>
+</html>
