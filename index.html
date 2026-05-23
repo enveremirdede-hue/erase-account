@@ -10,11 +10,11 @@
         import { getAuth, signInWithEmailAndPassword, deleteUser } from "https://gstatic.com";
         import { getDatabase, ref, remove } from "https://gstatic.com";
 
-        // ✅ Sizin paylaştığınız güncel kurumsal Firebase anahtarlarınız yerleştirildi
+        // Firebase Anahtarlarınız
         const firebaseConfig = {
             apiKey: "AIzaSyA1bzy3VaZJwUwlhybNt6yrVzurQsrcqLw",
-            authDomain: "mailmaster-62785.firebaseapp.com",
-            databaseURL: "https://mailmaster-62785-default-rtdb.firebaseio.com",
+            authDomain: "://firebaseapp.com",
+            databaseURL: "https://firebaseio.com",
             projectId: "mailmaster-62785",
             storageBucket: "mailmaster-62785.firebasestorage.app",
             messagingSenderId: "324963953782",
@@ -22,7 +22,7 @@
             measurementId: "G-2DZQ0XPJCW"
         };
 
-        // Firebase ve Servisleri Başlat
+        // Firebase Servislerini Başlat
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
@@ -31,7 +31,7 @@
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const nickname = document.getElementById('nickname').value;
+            const nickname = document.getElementById('nickname').value.trim();
             const password = document.getElementById('password').value;
             const confirmCheck = document.getElementById('confirmCheck').checked;
 
@@ -40,29 +40,26 @@
                 return;
             }
 
-            // Firebase Auth için takma adı e-postaya dönüştürme mantığı
-            // Eğer takma ad zaten @ içeriyorsa doğrudan kullanır, içermiyorsa kurumsal uzantınızı ekler
+            // Kurumsal Auth e-posta dönüşümü
             const email = nickname.includes("@") ? nickname : `${nickname}@mailmaster.com`;
 
             try {
                 showMessage("Kimlik doğrulanıyor...", "info");
-                // 1. Kullanıcıyı doğrula (Giriş yaptır)
+                // 1. Kullanıcıyı Auth sisteminde doğrula
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                const userId = user.uid; // Kullanıcının Firebase ID'si
 
-                showMessage("Realtime Database kayıtları temizleniyor...", "info");
+                showMessage("Veritabanı kayıtları temizleniyor...", "info");
                 
-                // 2. Realtime Database'deki kullanıcı verilerini siler
-                // 💡 NOT: Veritabanında kullanıcılar hangi klasördeyse aşağıdaki 'users/' kısmını ona göre değiştirebilirsiniz (Örn: 'kullanicilar/')
-                const userRef = ref(database, 'users/' + userId);
+                // 2. Realtime Database Kurallarınıza Göre Doğrudan Takma Ad (Username) Klasörünü Siler
+                const userRef = ref(database, 'users/' + nickname);
                 await remove(userRef);
 
                 showMessage("Hesap kayıtları tamamen siliniyor...", "info");
-                // 3. Kullanıcıyı Firebase Auth (Giriş) sisteminden tamamen siler
+                // 3. Kullanıcıyı Auth sisteminden tamamen siler
                 await deleteUser(user);
 
-                showMessage("Hesabınız ve tüm kurumsal verileriniz başarıyla kalıcı olarak silindi.", "success");
+                showMessage("Hesabınız ve tüm verileriniz başarıyla kalıcı olarak silindi.", "success");
                 document.getElementById('deleteForm').reset();
             } catch (error) {
                 console.error(error);
@@ -119,7 +116,7 @@
 
     <form id="deleteForm">
         <div class="form-group">
-            <label for="nickname">Takma Adınız veya E-postanız</label>
+            <label for="nickname">Takma Adınız (Username)</label>
             <input type="text" id="nickname" placeholder="Kullanıcı adınızı girin" required autocomplete="username">
         </div>
         
